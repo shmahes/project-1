@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background-color: #F1DCCF;
+  color: #2E2320;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background: #F1DCCF;
+}
+
+/* Inputs: a simple underline using the brand colours.
+   No top padding so the value sits right under its label. */
+input,
+textarea,
+select {
+  @apply w-full border-b-2 border-brand-charcoal/20 bg-transparent pb-2 text-brand-charcoal outline-none;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  @apply border-brand-terracotta;
+}
+
+input::placeholder,
+textarea::placeholder {
+  @apply text-brand-charcoal/40;
+}
+
+/* The notes box is a bordered box, so it keeps padding on all sides. */
+textarea {
+  @apply min-h-[90px] resize-none rounded-lg border-2 p-3;
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Gentle fade when the step changes. */
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade {
+  animation: fade 0.25s ease;
+}
