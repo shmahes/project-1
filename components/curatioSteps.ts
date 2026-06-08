@@ -20,7 +20,6 @@ export type FormData = {
   avoid: string;
   supportType: string;
   supportOther: string;
-  deliveryMethod: string;
   notes: string;
 };
 
@@ -44,7 +43,6 @@ export const initialFormData: FormData = {
   avoid: '',
   supportType: '',
   supportOther: '',
-  deliveryMethod: '',
   notes: '',
 };
 
@@ -55,7 +53,6 @@ export const budgetOptions = ['Under ₹50,000', '₹50,000–₹1,00,000', '₹
 export const stretchOptions = ['Yes', 'No', 'Maybe'];
 export const focusOptions = ['Entrance & welcome area', 'Stage/Main setup', 'Seating area', 'Table styling', 'Photo booth', 'Other'];
 export const supportOptions = ['Styling guidance only', 'Detailed styling plan', 'Execution support', 'Other'];
-export const deliveryOptions = ['PDF', 'Google drive link'];
 
 // Title + subtitle shown at the top of each step.
 export const steps = [
@@ -65,7 +62,7 @@ export const steps = [
   { title: 'Budget direction', subtitle: 'A range to design within.', note: 'This stays between us and simply guides the design scope.' },
   { title: 'Where should we focus?', subtitle: 'The moments that matter most.', note: "Choose as many as you like — or none, and we'll advise." },
   { title: 'Inspiration & support', subtitle: 'How hands-on should we be?', note: 'Screenshots, Pinterest saves, anything at all — it all helps.' },
-  { title: 'Final touches', subtitle: 'How to send your styling concept.', note: 'We usually reply within two working days.' },
+  { title: 'Final touches', subtitle: 'One last note before we begin.', note: 'We usually reply within two working days.' },
 ];
 
 export const totalSteps = steps.length;

@@ -14,12 +14,12 @@ body {
   background: #F1DCCF;
 }
 
-/* Inputs: a simple underline using the brand colours.
-   No top padding so the value sits right under its label. */
+/* Inputs share the OptionCard visual family: same bordered box, radius,
+   border width, padding and background — so fields and cards read as one system. */
 input,
 textarea,
 select {
-  @apply w-full border-b-2 border-brand-charcoal/20 bg-transparent pb-2 text-brand-charcoal outline-none;
+  @apply w-full rounded-lg border-2 border-brand-charcoal/20 bg-transparent px-4 py-3 text-brand-charcoal outline-none transition;
 }
 
 input:focus,
@@ -33,9 +33,8 @@ textarea::placeholder {
   @apply text-brand-charcoal/40;
 }
 
-/* The notes box is a bordered box, so it keeps padding on all sides. */
 textarea {
-  @apply min-h-[90px] resize-none rounded-lg border-2 p-3;
+  @apply min-h-[7rem] resize-none;
 }
 
 button {
@@ -43,6 +42,11 @@ button {
 }
 button:disabled {
   cursor: not-allowed;
+}
+
+/* Field labels must be block so vertical spacing (space-y) applies to them. */
+label {
+  display: block;
 }
 
 /* Gentle fade when the step changes. */

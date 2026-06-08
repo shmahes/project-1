@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   FormData,
   budgetOptions,
-  deliveryOptions,
   eventTypes,
   focusOptions,
   formatEventType,
@@ -87,47 +86,46 @@ export default function CuratioQuestionnaire() {
   const current = steps[step - 1];
 
   return (
-    <div className="flex min-h-screen items-start justify-center px-4 py-12 sm:items-center sm:py-10">
-      {/* Fixed height (desktop) so every step's box is identical; buttons pinned to the bottom. */}
-      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-brand-charcoal/10 bg-brand-cream p-7 shadow-soft sm:h-[740px] sm:p-10">
+    <div className="flex min-h-[100dvh] items-center justify-center p-4 sm:p-6">
+      {/* The card is capped to the viewport so the footer is always visible; the question area
+          scrolls inside. A shared min-height gives short steps a comfortable baseline. */}
+      <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-brand-charcoal/10 bg-brand-cream p-7 shadow-soft sm:max-h-[calc(100dvh-3rem)] sm:min-h-[620px] sm:p-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex shrink-0 items-center justify-between">
         <span className="font-script text-3xl text-brand-terracotta">Curatio</span>
         <span className="text-sm text-brand-charcoal/60">Step {step} of {totalSteps}</span>
       </div>
 
       {/* Progress bar */}
-      <div className="mt-3 h-1 w-full rounded-full bg-brand-charcoal/15">
+      <div className="mt-3 h-1 w-full shrink-0 rounded-full bg-brand-charcoal/15">
         <div
           className="h-full rounded-full bg-brand-terracotta transition-all duration-300"
           style={{ width: `${(step / totalSteps) * 100}%` }}
         />
       </div>
 
-      {/* Question — content sits at the top; the note is pinned to the bottom to fill short steps. */}
-      <div key={step} className="fade mt-8 flex min-h-0 flex-col overflow-y-auto sm:flex-1">
+      {/* Question — scrolls inside the card so the footer stays pinned; note sits at the bottom. */}
+      <div key={step} className="fade mt-8 flex min-h-0 flex-1 flex-col overflow-y-auto pb-2">
         <h1 className="font-serif text-3xl text-brand-charcoal sm:text-4xl">{current.title}</h1>
         <p className="mt-1 text-brand-charcoal/60">{current.subtitle}</p>
 
-        <div className="mt-8">
+        <div className="mt-8 flex-1">
           {step === 1 && <StepContact data={data} set={set} />}
           {step === 2 && <StepEvent data={data} set={set} />}
           {step === 3 && <StepVision data={data} set={set} toggle={toggle} />}
           {step === 4 && <StepBudget data={data} set={set} />}
           {step === 5 && <StepFocus data={data} set={set} toggle={toggle} />}
           {step === 6 && <StepSupport data={data} set={set} />}
-          {step === 7 && <StepFinal data={data} set={set} />}
+          {step === 7 && <StepFinal data={data} set={set} goTo={setStep} />}
         </div>
 
-        <p className="mt-auto border-t border-brand-charcoal/10 pt-5 text-sm italic text-brand-charcoal/50">
-          {current.note}
-        </p>
+        <p className="mt-8 text-sm italic text-brand-charcoal/50">{current.note}</p>
       </div>
 
-      {error && <p className="mt-6 text-sm text-brand-terracotta">{error}</p>}
+      {error && <p className="mt-4 shrink-0 text-sm text-brand-terracotta">{error}</p>}
 
-      {/* Buttons */}
-      <div className="mt-10 flex items-center justify-between">
+      {/* Footer — pinned to the bottom of the card, always visible while content scrolls above. */}
+      <div className="mt-6 flex shrink-0 items-center justify-between border-t border-brand-charcoal/10 pt-6">
         <button
           type="button"
           onClick={back}
@@ -157,16 +155,47 @@ function Label({ text }: { text: string }) {
   return <span className="mb-2 block text-sm font-semibold text-brand-charcoal">{text}</span>;
 }
 
-// A selectable option button. Terracotta when selected, outlined when not.
+// THE one option card, used for every tappable choice on every step.
+// Fixed min-height fits a two-line label, so cards are identical regardless of label length;
+// short labels are vertically centred. Filled terracotta + check when selected (not colour-only).
 function Option({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
-  const base = 'rounded-lg border-2 px-4 py-3 text-left text-sm font-semibold shadow-soft';
+  const base =
+    'flex min-h-[3rem] items-center justify-between gap-2 rounded-lg border-2 px-4 py-3 text-left text-sm font-semibold transition duration-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-terracotta focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream';
   const style = selected
     ? 'border-brand-terracotta bg-brand-terracotta text-brand-cream'
     : 'border-brand-charcoal/20 text-brand-charcoal hover:border-brand-terracotta';
   return (
-    <button type="button" onClick={onClick} className={`${base} ${style}`}>
-      {label}
+    <button type="button" onClick={onClick} aria-pressed={selected} className={`${base} ${style}`}>
+      <span>{label}</span>
+      {selected && (
+        <span aria-hidden className="shrink-0 text-base leading-none">
+          ✓
+        </span>
+      )}
     </button>
+  );
+}
+
+// THE one labelled text field, used for every free-text input. Inherits the bordered-box
+// styling from globals.css so it matches the OptionCard family; label + gap are identical everywhere.
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label className="block">
+      <Label text={label} />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+    </label>
   );
 }
 
@@ -183,26 +212,17 @@ type MultiProps = StepProps & {
 
 function StepContact({ data, set }: StepProps) {
   return (
-    <div className="grid gap-6 sm:grid-cols-3">
-      <label>
-        <Label text="Full name" />
-        <input value={data.fullName} onChange={(e) => set('fullName', e.target.value)} placeholder="Your full name" />
-      </label>
-      <label>
-        <Label text="Phone" />
-        <input value={data.contactNumber} onChange={(e) => set('contactNumber', e.target.value)} placeholder="+91 98765 43210" />
-      </label>
-      <label>
-        <Label text="Email" />
-        <input type="email" value={data.email} onChange={(e) => set('email', e.target.value)} placeholder="hello@domain.com" />
-      </label>
+    <div className="grid gap-x-4 gap-y-8 sm:grid-cols-3">
+      <Field label="Full name" value={data.fullName} onChange={(v) => set('fullName', v)} placeholder="Your full name" />
+      <Field label="Phone" value={data.contactNumber} onChange={(v) => set('contactNumber', v)} placeholder="+91 98765 43210" />
+      <Field label="Email" type="email" value={data.email} onChange={(v) => set('email', v)} placeholder="hello@domain.com" />
     </div>
   );
 }
 
 function StepEvent({ data, set }: StepProps) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       <div>
         <Label text="Event type" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -219,15 +239,9 @@ function StepEvent({ data, set }: StepProps) {
           />
         )}
       </div>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <label>
-          <Label text="Date of event" />
-          <input type="date" value={data.eventDate} onChange={(e) => set('eventDate', e.target.value)} />
-        </label>
-        <label>
-          <Label text="City & venue" />
-          <input value={data.venueLocation} onChange={(e) => set('venueLocation', e.target.value)} placeholder="e.g. Delhi, Taj Ballroom" />
-        </label>
+      <div className="grid gap-x-4 gap-y-8 sm:grid-cols-2">
+        <Field label="Date of event" type="date" value={data.eventDate} onChange={(v) => set('eventDate', v)} />
+        <Field label="City & venue" value={data.venueLocation} onChange={(v) => set('venueLocation', v)} placeholder="e.g. Delhi, Taj Ballroom" />
       </div>
       <div>
         <Label text="Guest count" />
@@ -243,7 +257,7 @@ function StepEvent({ data, set }: StepProps) {
 
 function StepVision({ data, set, toggle }: MultiProps) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       <div>
         <Label text="The vibe (select all that apply)" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -252,21 +266,15 @@ function StepVision({ data, set, toggle }: MultiProps) {
           ))}
         </div>
       </div>
-      <label>
-        <Label text="Preferred colour palette" />
-        <input value={data.colourPalette} onChange={(e) => set('colourPalette', e.target.value)} placeholder="warm earthy tones, soft pastels…" />
-      </label>
-      <label>
-        <Label text="Themes or styles you love" />
-        <input value={data.themes} onChange={(e) => set('themes', e.target.value)} placeholder="textured florals, muted luxury…" />
-      </label>
+      <Field label="Preferred colour palette" value={data.colourPalette} onChange={(v) => set('colourPalette', v)} placeholder="warm earthy tones, soft pastels…" />
+      <Field label="Themes or styles you love" value={data.themes} onChange={(v) => set('themes', v)} placeholder="textured florals, muted luxury…" />
     </div>
   );
 }
 
 function StepBudget({ data, set }: StepProps) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       <div>
         <Label text="Budget for decor" />
         <div className="grid gap-3 sm:grid-cols-2">
@@ -289,7 +297,7 @@ function StepBudget({ data, set }: StepProps) {
 
 function StepFocus({ data, set, toggle }: MultiProps) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       <div>
         <Label text="Focus areas (select all that apply)" />
         <div className="grid gap-3 sm:grid-cols-2">
@@ -298,14 +306,8 @@ function StepFocus({ data, set, toggle }: MultiProps) {
           ))}
         </div>
       </div>
-      <label>
-        <Label text="Must-haves (optional)" />
-        <input value={data.mustInclude} onChange={(e) => set('mustInclude', e.target.value)} placeholder="personalised seating cards…" />
-      </label>
-      <label>
-        <Label text="Avoid (optional)" />
-        <input value={data.avoid} onChange={(e) => set('avoid', e.target.value)} placeholder="plastic flowers, neon…" />
-      </label>
+      <Field label="Must-haves (optional)" value={data.mustInclude} onChange={(v) => set('mustInclude', v)} placeholder="personalised seating cards…" />
+      <Field label="Avoid (optional)" value={data.avoid} onChange={(v) => set('avoid', v)} placeholder="plastic flowers, neon…" />
     </div>
   );
 }
@@ -313,7 +315,7 @@ function StepFocus({ data, set, toggle }: MultiProps) {
 function StepSupport({ data, set }: StepProps) {
   return (
     <div>
-      <Label text="How hands-on should we be?" />
+      <Label text="Choose the level of support" />
       <div className="grid gap-3 sm:grid-cols-2">
         {supportOptions.map((option) => (
           <Option key={option} label={option} selected={data.supportType === option} onClick={() => set('supportType', option)} />
@@ -331,18 +333,45 @@ function StepSupport({ data, set }: StepProps) {
   );
 }
 
-function StepFinal({ data, set }: StepProps) {
+// A scannable recap row. Tappable to jump back to the step that owns it (not editable here).
+function SummaryRow({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
   return (
-    <div className="space-y-7">
+    <button
+      type="button"
+      onClick={onEdit}
+      className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-brand-charcoal/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-terracotta"
+    >
+      <span className="shrink-0 text-sm text-brand-charcoal/60">{label}</span>
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="truncate text-sm font-semibold text-brand-charcoal">{value || '—'}</span>
+        <span aria-hidden className="shrink-0 text-brand-terracotta">›</span>
+      </span>
+    </button>
+  );
+}
+
+function StepFinal({ data, set, goTo }: StepProps & { goTo: (step: number) => void }) {
+  const rows = [
+    { label: 'Event', value: formatEventType(data.eventType, data.eventTypeOther), step: 2 },
+    { label: 'Date', value: data.eventDate, step: 2 },
+    { label: 'Venue', value: data.venueLocation, step: 2 },
+    { label: 'Guests', value: data.guestCount, step: 2 },
+    { label: 'Vibe', value: data.vibes.join(', '), step: 3 },
+    { label: 'Budget', value: data.budgetRange, step: 4 },
+    { label: 'Focus', value: data.focusAreas.join(', '), step: 5 },
+    { label: 'Support', value: data.supportType === 'Other' ? data.supportOther : data.supportType, step: 6 },
+  ];
+  return (
+    <div className="space-y-8">
       <div>
-        <Label text="How should we deliver your package?" />
-        <div className="grid grid-cols-2 gap-3">
-          {deliveryOptions.map((option) => (
-            <Option key={option} label={option} selected={data.deliveryMethod === option} onClick={() => set('deliveryMethod', option)} />
+        <Label text="Review your brief" />
+        <div className="divide-y divide-brand-charcoal/10 overflow-hidden rounded-lg border-2 border-brand-charcoal/15">
+          {rows.map((row) => (
+            <SummaryRow key={row.label} label={row.label} value={row.value} onEdit={() => goTo(row.step)} />
           ))}
         </div>
       </div>
-      <label>
+      <label className="block">
         <Label text="Anything else we should know?" />
         <textarea value={data.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Share anything that helps us capture your vision" />
       </label>
