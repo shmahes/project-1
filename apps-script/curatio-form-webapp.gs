@@ -26,7 +26,6 @@ function doPost(e) {
       payload.avoid || '',
       payload.supportType || '',
       payload.fileNames || '',
-      payload.deliveryMethod || '',
       payload.notes || '',
     ]);
 
@@ -67,7 +66,6 @@ function getSubmissionSheet() {
       'Avoid',
       'Support Type',
       'Inspiration files',
-      'Delivery Method',
       'Notes',
     ]);
   }
@@ -85,7 +83,6 @@ function sendNotificationEmail(payload) {
     `Event type: ${payload.eventType || '—'}`,
     `Event date: ${payload.eventDate || '—'}`,
     `Guests: ${payload.guestCount || '—'}`,
-    `Delivery: ${payload.deliveryMethod || '—'}`,
     `Support: ${payload.supportType || '—'}`,
     `Inspiration files: ${payload.fileNames || '—'}`,
     '',
